@@ -29,6 +29,7 @@ class Review_Discipline:
         self.name = name
         self.positions = []
         self.total_hours = 0
+
 class Permit_or_Difficulity_or_Inspections():
     def __init__(self, per_year, name):
         self.per_year = per_year
