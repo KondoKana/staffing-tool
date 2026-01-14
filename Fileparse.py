@@ -29,6 +29,13 @@ class Review_Discipline:
         self.name = name
         self.positions = []
         self.total_hours = 0
+class Permit_or_Difficulity_or_Inspections():
+    def __init__(self, per_year, name):
+        self.per_year = per_year
+        self.type = name
+        self.sub_type_list = []
+    
+    
 
 def main():
     parser(False)
@@ -36,6 +43,7 @@ def main():
 
 
 def parser(ui = True, filename ="Template Input.xlsx"):
+    categories = {}
     
     if ui:
         filename=filedialog.askopenfilename()   
@@ -55,6 +63,42 @@ def parser(ui = True, filename ="Template Input.xlsx"):
     #     for cell in row:
     #         if isinstance(cell, openpyxl.cell.cell.MergedCell):
     #             print(cell)
+    file = pd.ExcelFile(filename)
+    thing = pd.read_excel(file, sheet_name=None, header=0)
+    typesx = thing['types-x-per-interval']
+    hoursx = thing['hours-per-item-x-positions']
+    staffing = thing['staffing-availibility']
+    
+    for index, row in typesx.iterrows():
+        if index ==0:
+            print("First row")
+        else:
+            if type(row['Catagory']==float and type(row['Permits per year']==float)):
+                categories[row['Permit Type']]=[]
+                most_recent = row['Permit Type']
+            if type(row['Catagory'])==float:
+                categories[most_recent].append(Permit_or_Difficulity_or_Inspections(row['Permit Type'], row['Permits per Year']))
+            if type(row['Catagory'])!=float:
+                
+                
+                
+
+
+    
+    
+    
+    
+    #for i in thing.columns:
+    #    print(i)
+    #output(thing)
+    #df = openpyxl.load_workbook(filename)
+    #df.active
+    #print(df.sheetnames)
+    #sa = df["staffing-availibility"]
+    #for row in sa.iter_rows():
+    #    for cell in row:
+    #        if isinstance(cell, openpyxl.cell.cell.MergedCell):
+    #            print(cell)
 
 def output(dataset):
     #tada!
