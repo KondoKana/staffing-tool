@@ -14,6 +14,21 @@ import openpyxl
 #hours-per-item-x-positions
 #staffing-availibility
 
+#xlsxwrite 
+
+fte_per_person = 1872
+
+class Position:
+    def __init__(self, name, count, hour_share):
+        self.name = name
+        self.count = count
+        self.hour_share = hour_share
+
+class Review_Discipline:
+    def __init__(self, name):
+        self.name = name
+        self.positions = []
+        self.total_hours = 0
 
 def main():
     parser(False)
@@ -25,19 +40,21 @@ def parser(ui = True, filename ="Template Input.xlsx"):
     if ui:
         filename=filedialog.askopenfilename()   
 
-    # file = pd.ExcelFile(filename)
-    # thing = pd.read_excel(file, sheet_name=None)
-    # print(thing['staffing-availibility'])
-    # print(type(thing))
-    # output(thing)
-    df = openpyxl.load_workbook(filename)
-    df.active
-    print(df.sheetnames)
-    sa = df["staffing-availibility"]
-    for row in sa.iter_rows():
-        for cell in row:
-            if isinstance(cell, openpyxl.cell.cell.MergedCell):
-                print(cell)
+    file = pd.ExcelFile(filename)
+    thing = pd.read_excel(file, sheet_name=None)
+    print(thing['staffing-availibility'])
+    print(type(thing))
+    output(thing)
+
+
+    # df = openpyxl.load_workbook(filename)
+    # df.active
+    # print(df.sheetnames)
+    # sa = df["staffing-availibility"]
+    # for row in sa.iter_rows():
+    #     for cell in row:
+    #         if isinstance(cell, openpyxl.cell.cell.MergedCell):
+    #             print(cell)
 
 def output(dataset):
     #tada!
