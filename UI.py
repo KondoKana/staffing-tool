@@ -1,7 +1,7 @@
 import tkinter as tk
 import pandas as pd
 from tkinter import filedialog
-import Fileparse
+import Actual_Fileparse
 
 
 #def file_button_clicked():
@@ -19,7 +19,7 @@ m.title('Permit Parser 9000!')
 file_button = tk.Button(m, 
                    text='Pick a file', 
                    width=15, 
-                   command=Fileparse.parser,
+                   command=Actual_Fileparse.file_read_parser,
                    activebackground="blue", 
                    activeforeground="white",
                    anchor="center",
