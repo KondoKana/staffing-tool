@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog
 import pandas as pd
 import openpyxl
+import math
 
 # Hello peter. I am here to give you information.
 # In order for this to work, you need to go to your VS code and upgrade the Python version to the latest version, 3.13.5.
@@ -30,7 +31,7 @@ class Review_Discipline:
         self.positions = []
         self.total_hours = 0
 
-class Permit_or_Difficulity_or_Inspections():
+class Permit():
     def __init__(self, per_year, name):
         self.per_year = per_year
         self.type = name
@@ -69,19 +70,39 @@ def parser(ui = True, filename ="Template Input.xlsx"):
     typesx = thing['types-x-per-interval']
     hoursx = thing['hours-per-item-x-positions']
     staffing = thing['staffing-availibility']
-    
+    counter = 0
     for index, row in typesx.iterrows():
-        if index ==0:
-            print("First row")
-        else:
-            if type(row['Catagory']==float and type(row['Permits per year']==float)):
-                categories[row['Permit Type']]=[]
-                most_recent = row['Permit Type']
-            if type(row['Catagory'])==float:
-                categories[most_recent].append(Permit_or_Difficulity_or_Inspections(row['Permit Type'], row['Permits per Year']))
-            if type(row['Catagory'])!=float:
+        counter+=1
+        if type(row['Catagory'])==float and math.isnan(row['Permits per year']):
+            categories[row['Permit Type']]=[]
+            most_recent = row['Permit Type']
+
+        elif type(row['Catagory'])==float:
+            categories[most_recent].append(Permit(row['Permits per year'], row['Permit Type']))
+
+        elif type(row['Catagory'])!=float:
+            checker = 0
+            for i in categories[most_recent]:
+                print(i.type)
+                if i.type == row['Catagory']:
+                    i.per_year += row['Permits per year']
+                    i.sub_type_list.append(row['Permit Type'])
+                    checker = 1
+                    break
+            if checker == 0:
+                current = Permit(row['Permits per year'], row['Catagory'])
+                current.sub_type_list.append(row['Permit Type'])
+                categories[most_recent].append(current)
                 
-                
+    print(counter)
+    print(categories.keys())
+    for i in categories.values():
+        print(len(i))
+    
+    print(categories['Planning'][0].type)
+    print(categories['Building '][0].type)
+    print(categories['Planning'][1].sub_type_list)
+    print(categories['Planning'][2].sub_type_list)
                 
 
 
