@@ -32,30 +32,33 @@ def file_read_parser():
     typex = thing[sheet_names[1]]
     hoursx = thing[sheet_names[2]]
     staffing = thing[sheet_names[3]]
-    typex_generator = typex.iter_rows(min_row=2, max_row = 62, max_col = 3, values_only=True) #Need to make the min_row/max_row customizable
-    hourx_generator = hoursx.iter_rows(min_row=2, max_row = 50, max_col=5, values_only=True)
 
+    categories = parse_types_x(typex)
+    parse_hours_x(hoursx,categories)
+    for i in categories["Building "][0].review_disciplines:
+        print (i.name, i.total_hours)
+    
+
+def parse_types_x(typex, bottom= 62, row = 2, column = 3):
+    parse_type_generator = typex.iter_rows(min_row=row, max_row = bottom, max_col = column, values_only=True)
     categories = {}
-
     counter = 0
-    for row in typex_generator:
+    for row in parse_type_generator:
         counter += 1
         Catagory = row[0]
+        
         Permit_type = row[1]
         Per_year = row[2]
 
         if Catagory== None and Per_year == None:
             categories[Permit_type]=[]
             most_recent = Permit_type
-            print("first")
 
         elif Catagory == None:
             categories[most_recent].append(Permit(Per_year, Permit_type))
-            print("second)")
         
         elif Catagory != None:
             checker = 0
-            print("third")
             for i in categories[most_recent]:
                 print(i.type)
                 if i.type == Catagory:
@@ -70,21 +73,38 @@ def file_read_parser():
 
     print(counter)
     print(categories.keys())
-    for i in categories.values():
-        print(len(i))
+    #for i in categories.values():
+        #print(len(i))
+    return categories
 
-
+def parse_hours_x(hoursx,categories, bottom = 50, row = 2, column = 6, min_col=1):
+    parse_hours_generator = hoursx.iter_rows(min_row=row, max_row = bottom, max_col=column, min_col=min_col, values_only=True)
+    print("\n")
+    for i in hoursx.iter_rows(max_row = 1, values_only=True, max_col =  6, min_col = 2):
+        names = i
+    print(names)
+    #print(variable_names)
     counter = 0
-    for row in hourx_generator:
+    for row in parse_hours_generator:
         counter += 1
-        Permit_type = row[0]
-        Administrative = row[1]
-        Building = row[2]
-        Planning = row[3]
-        Stormwater = row[4]
-        Engineering = row[5]
+        if row[0] in categories:
+            current = categories[row[0]]
+        else:
+            for i in range(len(current)):
+                if current[i].type == row[0]:
+                    for g in range(1,len(row)):
+                        print(g)
+                        current[i].review_disciplines.append(Review_Discipline(names[g-1],row[g]))
+                    break
+    #print(categories.keys())
+    #print(categories["Building "][0].review_disciplines)
+    #for i in categories["Building "][0].review_disciplines:
+    
+    #    print (i.name, i.total_hours)
 
-        if Administrative == None:
+    
+            
+
 
 
 
