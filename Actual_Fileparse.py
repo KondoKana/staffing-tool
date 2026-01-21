@@ -17,21 +17,32 @@ class Review_Discipline:
     def __init__(self, name, hours):
         self.name = name
         self.total_hours = hours
+    def __str__(self):
+        s = "Name: " + str(self.name) + "\t"
+        s += "Total Hours: " + str(self.total_hours)
+        return s
         
 
 class Permit():
-    def __init__(self, per_year, name):
+    def __init__(self, per_year, name, sub_type_list2 = None):
         self.per_year = per_year
         self.type = name
-        self.sub_type_list = []
+        if sub_type_list2 == None:
+            self.sub_type_list = []
         self.review_disciplines = []
     def __str__(self):
         s = "Type: " + str(self.type) + "\n"
         s += "Per Year: " + str(self.per_year)
+        if len(self.review_disciplines) != 0:
+            s += "\nReview Disciplines: \n"
+            for disc in self.review_disciplines:
+                s +=  str(disc) + "\n"
+
         if len(self.sub_type_list) != 0:
-            s += "\n Subtypes:"
+            s += "\nSubtypes:"
             for subtype in self.sub_type_list:
-                print((Permit)(subtype))
+                s += "\n"+ str(subtype)
+            s += "\n"
         return s
 
 
@@ -56,49 +67,60 @@ def col2num(col):
 
 
     
-def file_read_parser():
-    filename=filedialog.askopenfilename() 
+def file_read_parser(name = "Template Input.xlsx", ask = True):
+    filename = name
+    if ask:
+        filename=filedialog.askopenfilename() 
     #wb = Workbook()
-    thing = load_workbook(filename, rich_text=True)
+    return load_workbook(filename, rich_text=True)
+
     sheet_names = thing.sheetnames
     typex = thing[sheet_names[1]]
     hoursx = thing[sheet_names[2]]
     staffing = thing[sheet_names[3]]
-    typex_generator = typex.iter_rows(min_row=2, max_row = 62, max_col = 3, values_only=True) #Need to make the min_row/max_row customizable
-    hourx_generator = hoursx.iter_rows(min_row=2, max_row = 50, max_col=5, values_only=True)
 
+
+
+
+
+    categories = parse_types_x(typex)
+    parse_hours_x(hoursx,categories)
+    for i in categories["Building "][0].review_disciplines:
+        print (i.name, i.total_hours)
+    
+
+def parse_types_x(typex, bottom= 62, row = 2, column = 3, complexity_exists = False):
+    parse_type_generator = typex.iter_rows(min_row=row, max_row = bottom, max_col = column, values_only=True)
     categories = {}
     counter = 0
     for row in parse_type_generator:
         counter += 1
-        Catagory = row[0] if complexity_exists else None
-        
-        Permit_type = row[1 - 1*complexity_exists]
-        Per_year = row[2 - 1*complexity_exists]
-
-        if Catagory== None and Per_year == None:
+        Complexity = row[0] if complexity_exists else None
+        Permit_type = row[0 + complexity_exists]
+        Per_year = row[1 + complexity_exists]
+        if Complexity == None and Per_year == None:
             categories[Permit_type]=[]
             most_recent = Permit_type
 
-        elif Catagory == None:
+        elif Complexity == None:
             categories[most_recent].append(Permit(Per_year, Permit_type))
         
-        elif Catagory != None:
+        elif Complexity != None:
             checker = 0
             for i in categories[most_recent]:
-                print(i.type)
-                if i.type == Catagory:
+                # print(i.type)
+                if i.type == Complexity:
                     i.per_year += Per_year
                     i.sub_type_list.append(Permit_type)
                     checker = 1
                     break
             if checker == 0:
-                current = Permit(Per_year, Catagory)
-                current.sub_type_list.append(Permit_type)
+                current = Permit(Per_year, Complexity)
+                current.sub_type_list.append(Permit(Per_year, Permit_type))
                 categories[most_recent].append(current)
 
-    print(counter)
-    print(categories.keys())
+    # print(counter)
+    # print(categories.keys())
     #for i in categories.values():
         #print(len(i))
     return categories
@@ -122,17 +144,8 @@ def parse_hours_x(hoursx,categories, bottom = 50, row = 2, column = 6, min_col=1
                         print(g)
                         current[i].review_disciplines.append(Review_Discipline(names[g-1],row[g]))
                     break
-    #print(categories.keys())
-    #print(categories["Building "][0].review_disciplines)
-    #for i in categories["Building "][0].review_disciplines:
-    
-    #    print (i.name, i.total_hours)
 
-    
-            
-
-            return 0
-    return 0
+    return categories
 
 # Permit('',),
 building_list = [
@@ -179,7 +192,7 @@ fire_list = [
     Permit(10.2,'Fire Sprinkler'),
     Permit(15.0,'Fire Alarm')
 ]
-simple_permits = Permit(13.2,'Simple').sub_type_list = [
+simple_permits = Permit(13.2,'Simple', [
     Permit(1.2,'Administrative Permit (Types 1 and 2)'),
     Permit(0.6,'Appeal Of Administrative Decision (heard by He)'),
     Permit(0.6,'Appeal Of Type 3 - Pc/He Decision (heard by Cc)'),
@@ -187,37 +200,44 @@ simple_permits = Permit(13.2,'Simple').sub_type_list = [
     Permit(0.6,'Conditional Use Permit (Type 4 -Cc)'),
     Permit(4.8,'Critical Area Exemption (Type 1)'),
     Permit(1.2,'Critical Area Permitted Alteration (Type 2)')
-]
-medium_permits = Permit(29.4,'Medium').sub_type_list = [
+])
+medium_permits = Permit(29.4,'Medium', [
     Permit(1.8,'Eligible Facilities Request (Type 1)'),
     Permit(4.2,'Floodplain Development'),
     Permit(0.6,'Legislative Amendment'),
     Permit(10.2,'Pre-Application Meeting Request'),
     Permit(10.8,'Shoreline Exemption Permit (Type 1)'),
     Permit(1.8,'Shoreline Substantial Development Permit')
-]
-hard_permits = Permit(4.2,'Hard').sub_type_list = [
+])
+hard_permits = Permit(4.2,'Hard', [
     Permit(1.8,'Site Plan Development'),
     Permit(2.4,'Unit Lot Subdivision')
-]
-hard_no_e_permits = Permit(0.6,'Hard - No Engineering').sub_type_list = [
-
+])
+hard_no_e_permits = Permit(0.6,'Hard - No Engineering', [
     Permit(0.6,'Wireless Service Facility (Type 1)')
-]
+])
+
 planning_list = [simple_permits,medium_permits,hard_permits,hard_no_e_permits]
-catagories = {'Building': building_list, 'Plumbing / Mechanical': plumbing_mechanical_list, 'Engineering': engineering_list, 'Fire':fire_list, 'Planning':planning_list}
+test_categories = {'Building': building_list, 'Plumbing / Mechanical': plumbing_mechanical_list, 'Engineering': engineering_list, 'Fire':fire_list}
+
+def print_data(cate):
+    print("There are " + str(len(cate)) +" catagories in the input")
+    for category in cate:
+        print(str(category) + " with " + str(len(cate[category]))+ " permit types:")
+        for permit in cate[category]:
+            print(permit)
+        print("\n")
 
 def test():
-    filename ="Template Input.xlsx"
-    print("There are " + str(len(catagories)) +" catagories in the input")
-    for catagory in catagories:
-        print(str(catagory) + " with " + str(len(catagories[catagory]))+ " permit types:")
-        for permit in catagories[catagory]:
-            print(type(permit))
-            print(permit)
-
-    
-
+    wb = file_read_parser("Template Input.xlsx", False)
+    print(wb)
+    sheet_names = wb.sheetnames
+    typex = wb[sheet_names[1]]
+    hoursx = wb[sheet_names[2]]
+    staffing = wb[sheet_names[3]]
+    categories = parse_types_x(typex, complexity_exists= True)   
+    categories = parse_hours_x(hoursx,categories)
+    print_data(categories)
 
 if __name__ == "__main__":
     main()
