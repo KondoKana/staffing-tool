@@ -89,7 +89,16 @@ def file_read_parser(name = "Template Input.xlsx", ask = True):
         print (i.name, i.total_hours)
     
 
-def parse_types_x(typex, bottom= 62, row = 2, column = 3, complexity_exists = False):
+def parse_types_x(typex, bottom= 62, category_cell = None, per_type_cell = "B2", per_year_cell = "C2"):
+    """
+    Docstring for parse_types_x
+    
+    :param typex: The pyxl worksheet variable we are parsing data from
+    :param bottom: The bottommost row, to know when to stop reading
+    :param category_cell: The cell that indicates where the complexity column begins, if it exists
+    :param per_type_cell: The cell that indicates where the category type column begins
+    :param per_year_cell: The cell that indicates where the per-year column begins
+    """
     parse_type_generator = typex.iter_rows(min_row=row, max_row = bottom, max_col = column, values_only=True)
     categories = {}
     counter = 0
@@ -126,6 +135,9 @@ def parse_types_x(typex, bottom= 62, row = 2, column = 3, complexity_exists = Fa
     return categories
 
 def parse_hours_x(hoursx,categories, bottom = 50, row = 2, column = 6, min_col=1):
+    """
+    hoursx:
+    """
     parse_hours_generator = hoursx.iter_rows(min_row=row, max_row = bottom, max_col=column, min_col=min_col, values_only=True)
     print("\n")
     for i in hoursx.iter_rows(max_row = 1, values_only=True, max_col =  6, min_col = 2):
