@@ -3,6 +3,8 @@ from openpyxl import load_workbook
 from openpyxl import Workbook
 from tkinter import filedialog
 import math 
+import string
+
 
 class Position:
     def __init__(self, name, count, hour_share, review_discipline):
@@ -23,7 +25,37 @@ class Permit():
         self.type = name
         self.sub_type_list = []
         self.review_disciplines = []
+    def __str__(self):
+        s = "Type: " + str(self.type) + "\n"
+        s += "Per Year: " + str(self.per_year)
+        if len(self.sub_type_list) != 0:
+            s += "\n Subtypes:"
+            for subtype in self.sub_type_list:
+                print((Permit)(subtype))
+        return s
 
+
+
+def main():
+    test()
+
+#https://stackoverflow.com/questions/7261936/convert-an-excel-or-spreadsheet-column-letter-to-its-number-in-pythonic-fashion
+def col2num(col):
+    x = 0
+    y = 0
+    for c in col:
+        if c in string.ascii_letters:
+            x = x * 26 + (ord(c.upper()) - ord('A')) + 1
+        elif c.isdigit():
+            y = y * 10 + int(c)
+        else:
+            print(col + "Invalid Cell Name")
+            return (x,y)
+    return (x,y)
+
+
+
+    
 def file_read_parser():
     filename=filedialog.askopenfilename() 
     #wb = Workbook()
@@ -32,23 +64,17 @@ def file_read_parser():
     typex = thing[sheet_names[1]]
     hoursx = thing[sheet_names[2]]
     staffing = thing[sheet_names[3]]
+    typex_generator = typex.iter_rows(min_row=2, max_row = 62, max_col = 3, values_only=True) #Need to make the min_row/max_row customizable
+    hourx_generator = hoursx.iter_rows(min_row=2, max_row = 50, max_col=5, values_only=True)
 
-    categories = parse_types_x(typex)
-    parse_hours_x(hoursx,categories)
-    for i in categories["Building "][0].review_disciplines:
-        print (i.name, i.total_hours)
-    
-
-def parse_types_x(typex, bottom= 62, row = 2, column = 3):
-    parse_type_generator = typex.iter_rows(min_row=row, max_row = bottom, max_col = column, values_only=True)
     categories = {}
     counter = 0
     for row in parse_type_generator:
         counter += 1
-        Catagory = row[0]
+        Catagory = row[0] if complexity_exists else None
         
-        Permit_type = row[1]
-        Per_year = row[2]
+        Permit_type = row[1 - 1*complexity_exists]
+        Per_year = row[2 - 1*complexity_exists]
 
         if Catagory== None and Per_year == None:
             categories[Permit_type]=[]
@@ -105,7 +131,93 @@ def parse_hours_x(hoursx,categories, bottom = 50, row = 2, column = 6, min_col=1
     
             
 
+            return 0
+    return 0
+
+# Permit('',),
+building_list = [
+    Permit(9.6,'Accessory Dwelling Unit/Adu'),
+    Permit(5.4,'Accessory Structure/Garage'),
+    Permit(0.6,'Apartments, Five Or More Units'),
+    Permit(14.4,'Commercial'),
+    Permit(2.4,'Commercial Kitchen Hood'),
+    Permit(14.4,'Commercial Tenant Improvement'),
+    Permit(4.8,'Cottage Unit'),
+    Permit(23.4,'Deck'),
+    Permit(12.0,'Deconstruction & Demolition'),
+    Permit(62.4,'Fence'),
+    Permit(1.8,'Manufactured Home'),
+    Permit(2.4,'Manufactured Home Title Elimination'),
+    Permit(4.2,'Over Or In Water Structure'),
+    Permit(6.0,'Re-Roof Commercial'),
+    Permit(75.6,'Re-Roof Residential'),
+    Permit(21.0,'Residential Building Permit Application'),
+    Permit(30.6,'Residential Interior Only Remodel'),
+    Permit(39.6,'Residential Remodel'),
+    Permit(9.0,'Residential Single Family  Building'),
+    Permit(12.6,'Sign'),
+    Permit(63.0,'Solar Permit'),
+    Permit(1.8,'Tank Removal'),
+    Permit(1.2,'Tent Temporary/Festival Use'),
+    Permit(3.6,'Windows/Doors/Siding'),
+    Permit(32.4,'Windows/Doors/Siding New Or Replaced'),
+    Permit(1.2,'Wireless Facility/Cell Tower/Co-Location'),
+    Permit(4.8,'Yard Irrigation Sprinklers')]
+plumbing_mechanical_list =[
+    Permit(21.0,'Mechanical And Gas Water Heaters, Commercial'),
+    Permit(288.0,'Mechanical And Gas Water Heaters, Residential'),
+    Permit(18.0,'Plumbing & Mechanical Permit'),
+    Permit(24.6,'Plumbing And Electric Water Heaters')]
+engineering_list = [
+    Permit(0.6,'Site Development',),
+    Permit(9.6,'Clear And Grade',),
+    Permit(21.0,'Right-Of-Way Oversize Transport Application',),
+    Permit(112.2,'Right-Of-Way Permit Application',),
+    Permit(140.4,'Right-Of-Way Permit Franchise Application',),
+    Permit(0.6,'Side Sewer Repair Or Replacement',)]
+fire_list = [
+    Permit(10.2,'Fire Sprinkler'),
+    Permit(15.0,'Fire Alarm')
+]
+simple_permits = Permit(13.2,'Simple').sub_type_list = [
+    Permit(1.2,'Administrative Permit (Types 1 and 2)'),
+    Permit(0.6,'Appeal Of Administrative Decision (heard by He)'),
+    Permit(0.6,'Appeal Of Type 3 - Pc/He Decision (heard by Cc)'),
+    Permit(4.2,'Boundary Line Adjustment (Type 1)'),
+    Permit(0.6,'Conditional Use Permit (Type 4 -Cc)'),
+    Permit(4.8,'Critical Area Exemption (Type 1)'),
+    Permit(1.2,'Critical Area Permitted Alteration (Type 2)')
+]
+medium_permits = Permit(29.4,'Medium').sub_type_list = [
+    Permit(1.8,'Eligible Facilities Request (Type 1)'),
+    Permit(4.2,'Floodplain Development'),
+    Permit(0.6,'Legislative Amendment'),
+    Permit(10.2,'Pre-Application Meeting Request'),
+    Permit(10.8,'Shoreline Exemption Permit (Type 1)'),
+    Permit(1.8,'Shoreline Substantial Development Permit')
+]
+hard_permits = Permit(4.2,'Hard').sub_type_list = [
+    Permit(1.8,'Site Plan Development'),
+    Permit(2.4,'Unit Lot Subdivision')
+]
+hard_no_e_permits = Permit(0.6,'Hard - No Engineering').sub_type_list = [
+
+    Permit(0.6,'Wireless Service Facility (Type 1)')
+]
+planning_list = [simple_permits,medium_permits,hard_permits,hard_no_e_permits]
+catagories = {'Building': building_list, 'Plumbing / Mechanical': plumbing_mechanical_list, 'Engineering': engineering_list, 'Fire':fire_list, 'Planning':planning_list}
+
+def test():
+    filename ="Template Input.xlsx"
+    print("There are " + str(len(catagories)) +" catagories in the input")
+    for catagory in catagories:
+        print(str(catagory) + " with " + str(len(catagories[catagory]))+ " permit types:")
+        for permit in catagories[catagory]:
+            print(type(permit))
+            print(permit)
+
+    
 
 
-
-
+if __name__ == "__main__":
+    main()
