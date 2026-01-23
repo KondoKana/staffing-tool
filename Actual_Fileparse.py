@@ -44,6 +44,16 @@ class Permit():
                 s += "\n"+ str(subtype)
             s += "\n"
         return s
+class staff():
+    def __init__(self, department, FTE_equivlant, Title, Type, review_percent, admin_percent, name=None, FTE_hours = 1720):
+        self.name = name
+        self.department = department
+        self.FTE_equivlant = FTE_equivlant
+        self.title = Title
+        self.position = Type
+        self.review_percent = review_percent
+        self.admin_percent = admin_percent
+        self.FTE_hours = FTE_hours
 
 
 
@@ -70,9 +80,9 @@ def col2num(col):
 def file_read_parser(name = "Template Input.xlsx", ask = True):
     filename = name
     if ask:
-        filename=filedialog.askopenfilename() 
-    #wb = Workbook()
-    return load_workbook(filename, rich_text=True)
+        filename=filedialog.askopenfilename()
+    wb = Workbook()
+    thing = load_workbook(filename, rich_text=True)
 
     sheet_names = thing.sheetnames
     typex = thing[sheet_names[1]]
@@ -84,12 +94,16 @@ def file_read_parser(name = "Template Input.xlsx", ask = True):
 
 
     categories = parse_types_x(typex)
-    parse_hours_x(hoursx,categories)
-    for i in categories["Building "][0].review_disciplines:
-        print (i.name, i.total_hours)
+    categories = parse_hours_x(hoursx,categories)
+    staffing_dict = parse_staffing_x(staffing)
+
+    #for i in categories["Building "][0].review_disciplines:
+    #    print (i.name, i.total_hours)
+    for i in staffing_dict["Planning and Zoning"]:
+        print(i.name, i.department, i.FTE_equivlant, i.title, i.position, i.review_percent, i.admin_percent, i.FTE_hours)
     
 
-def parse_types_x(typex, bottom= 62, category_cell = None, per_type_cell = "B2", per_year_cell = "C2"):
+def parse_types_x(typex, bottom= 62, category_cell = None, per_type_cell = "B2", per_year_cell = "C2", complexity_exists = True, column = 3):
     """
     Docstring for parse_types_x
     
@@ -99,7 +113,7 @@ def parse_types_x(typex, bottom= 62, category_cell = None, per_type_cell = "B2",
     :param per_type_cell: The cell that indicates where the category type column begins
     :param per_year_cell: The cell that indicates where the per-year column begins
     """
-    parse_type_generator = typex.iter_rows(min_row=row, max_row = bottom, max_col = column, values_only=True)
+    parse_type_generator = typex.iter_rows(min_row=2, max_row = bottom, max_col = column, values_only=True)
     categories = {}
     counter = 0
     for row in parse_type_generator:
@@ -107,6 +121,7 @@ def parse_types_x(typex, bottom= 62, category_cell = None, per_type_cell = "B2",
         Complexity = row[0] if complexity_exists else None
         Permit_type = row[0 + complexity_exists]
         Per_year = row[1 + complexity_exists]
+        print(Permit_type)
         if Complexity == None and Per_year == None:
             categories[Permit_type]=[]
             most_recent = Permit_type
@@ -134,13 +149,13 @@ def parse_types_x(typex, bottom= 62, category_cell = None, per_type_cell = "B2",
         #print(len(i))
     return categories
 
-def parse_hours_x(hoursx,categories, bottom = 50, row = 2, column = 6, min_col=1):
+def parse_hours_x(hoursx,categories, bottom = 50, row = 3, column = 6, min_col=1):
     """
     hoursx:
     """
     parse_hours_generator = hoursx.iter_rows(min_row=row, max_row = bottom, max_col=column, min_col=min_col, values_only=True)
     print("\n")
-    for i in hoursx.iter_rows(max_row = 1, values_only=True, max_col =  6, min_col = 2):
+    for i in hoursx.iter_rows(max_row = 2, values_only=True, max_col =  6, min_col = 1):
         names = i
     print(names)
     #print(variable_names)
@@ -158,6 +173,25 @@ def parse_hours_x(hoursx,categories, bottom = 50, row = 2, column = 6, min_col=1
                     break
 
     return categories
+
+def parse_staffing_x(sheet, min_row = 3, max_row=17,max_col=8):
+    staffing = {}
+    staffing_generator = sheet.iter_rows(min_row=min_row, max_row=max_row, values_only=True, max_col=max_col)
+    for row in staffing_generator:
+        department = row[0]
+        FTE = row[2]
+        position = row[3]
+        type = row[4]
+        permit_review = row[5]
+        permit_admin = row[6]
+        name = row[1]
+
+        
+        if department in staffing.keys():
+            staffing[department].append(staff(department, FTE, position,type,permit_review, permit_admin,name))
+        else:
+            staffing[department] = [staff(department, FTE, position,type,permit_review, permit_admin,name)]
+    return staffing
 
 # Permit('',),
 building_list = [
