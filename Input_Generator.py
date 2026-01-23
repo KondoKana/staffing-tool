@@ -1,5 +1,7 @@
 import dearpygui.dearpygui as dpg
+import Excel_Generator
 
+share_review_disciplines = True
 form_width = 300
 
 #holds tags that corrospond to the fields holding information that we want
@@ -41,6 +43,10 @@ def update_combos_adding(sender, app_data):
 
 def update_combos_selecting(sender, app_data):
     val = dpg.get_value(sender)
+
+    if share_review_disciplines:
+        return
+
     for tag in departement_dropdowns:
         if tag == sender:
             continue
@@ -53,7 +59,7 @@ def make_fill_text_permit_catas(sender, app_data):
 
     text_tag = dpg.add_input_text(label="Permit Catagory", width = form_width, parent = textbox_group, callback = update_combos_adding)
     with dpg.group(parent=textbox_group, horizontal=True):
-        number_tag = dpg.add_input_int(width=form_width-58)
+        number_tag = dpg.add_input_int(default_value = 10, width = form_width-58)
         dpg.add_button(width=50,label="Delete", before = number_tag, user_data = [textbox_group,permit_cata_tags,(text_tag,number_tag)], callback = delete_cata)
         permit_cata_tags.append((text_tag,number_tag))
         dpg.add_text("Estimated number of Permit Types in that catagory")
@@ -93,11 +99,17 @@ def get_cata_names():
         c.append(dpg.get_value(tag[0]))
     return c
 
+def generate_file(sender, app_data, user_data):
+    Excel_Generator.generate_input_file(dpg.get_value("FTE Input"),
+                                        print_tag_values(sender,app_data,user_data[0]),
+                                        print_tag_values(sender,app_data,user_data[1]),
+                                        print_tag_values(sender,app_data,zip(user_data[2],user_data[3])),
+                                        )
         
 
 with dpg.window(tag="Primary Window", width=800, height=300, no_collapse=True, no_move=True):
     dpg.add_text("Please input your full time employee equivalent")
-    fte_eq = dpg.add_input_int()
+    dpg.add_input_int(tag="FTE Input", default_value = 1720)
     dpg.add_separator()
     
 
@@ -123,7 +135,8 @@ with dpg.window(tag="Primary Window", width=800, height=300, no_collapse=True, n
     with dpg.group(horizontal=True):
         dpg.add_button(label = "Get Catagories" , user_data = permit_cata_tags , callback = print_tag_values)
         dpg.add_button(label = "Get Disciplines" , user_data = discipline_tags , callback = print_tag_values)
-        dpg.add_button(label = "Get Departments" , user_data = departement_tags , callback = print_tag_values)
+        dpg.add_button(label = "Get Departments" , user_data = zip(departement_tags,departement_dropdowns) , callback = print_tag_values)
+    dpg.add_button(label="Generate File", user_data=[permit_cata_tags, discipline_tags, departement_tags, departement_dropdowns], callback=generate_file)
     
 dpg.create_viewport(title='Custom Title', width=800, height=600)
 dpg.setup_dearpygui()
